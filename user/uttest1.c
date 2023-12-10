@@ -6,14 +6,16 @@
 void foo() { 
     int c = 0; 
     for (;;) {
-        printf("foo (tid=%d): %d\n", mytid(), c); c += 1;
+        printf("foo (tid=%d): %d\n", mytid(), c); 
+        c += 1;
         yield();
     } 
 }
 void bar() { 
     int c = 0; 
     for (;;) {
-        printf("bar (tid=%d): %d\n", mytid(), c); yield();
+        printf("bar (tid=%d): %d\n", mytid(), c); 
+        yield();
         c += 2;
     } 
 }
