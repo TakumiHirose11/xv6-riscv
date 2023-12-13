@@ -1,61 +1,61 @@
-// user_threads.c
 #include "kernel/types.h"
-#include "user/user.h"  
-#include "kernel/stat.h"
-// # include "kernel/defs.h"
+#include "user/user.h"
 #include "user/uthreads.h"
 
 uthread_t uthreads[MAX_THREADS];
 
+int current_tid = -1;
+
 // 他のスレッドに実行を譲る
-// void yield(void) {
-//   int tid = mytid();
-//   if (tid > 0 && tid < MAX_THREADS && uthreads[tid].used) {
-//     // スレッドを切り替える
-//     swtch(&uthreads[tid].context, &uthreads[0].context);
-//   }
-// }
-
-void yield(void) {
-  // 未実装
-}
-
-
-int make_uthread(void (*fun)()) {
-  int proc_id = getpid();
-
-  for (int tid = 1; tid < MAX_THREADS; tid++) {
-    if (!uthreads[tid].used) {
-      uthreads[tid].fun = fun;
-      uthreads[tid].proc_id = proc_id; // プロセスIDを設定
-      uthreads[tid].used = 1;
-      uthreads[tid].context[0] = (uint64)fun; // スレッドの開始アドレスを設定
-      return tid;
-    }
-  }
-  return -1;  // スレッドの作成ができない場合
-}
-
-void start_uthreads(void) {
-  int proc_id = getpid();
-  // get tid
+void yield(void)
+{
   int tid = mytid();
-  if (tid > 0 && tid < MAX_THREADS && uthreads[tid].used && uthreads[tid].proc_id == proc_id) {
-    uthreads[tid].fun();  // スレッドを起動
+  for (int i = 0; i < MAX_THREADS; i++)
+  {
+    int next_tid = (tid + i + 1) % MAX_THREADS;
+    if (uthreads[next_tid].used)
+    {
+      struct context *current_context = &(uthreads[tid].context);
+      struct context *next_context = &(uthreads[next_tid].context);
+      current_tid = next_tid;
+      swtch(current_context, next_context);
+      return;
+    }
   }
 }
 
-int mytid(void) {
-  int proc_id = getpid();
-  
-  // プロセスごとに異なるtidを返す
-  for (int tid = 1; tid < MAX_THREADS; tid++) {
-    if (uthreads[tid].used && uthreads[tid].proc_id == proc_id) {
+int make_uthread(void (*fun)())
+{
+  for (int tid = 0; tid < MAX_THREADS; tid++)
+  {
+    if (!uthreads[tid].used)
+    {
+      uthreads[tid].fun = fun;
+      uthreads[tid].used = 1;
+      uthreads[tid].context.ra = (uint64)fun;
+      uthreads[tid].context.sp = (uint64)(uthreads[tid].stack + STACK_DEPTH);
       return tid;
     }
   }
-
-  return -1;
+  return -1; // スレッドの作成ができない場合
 }
 
+void start_uthreads(void)
+{
+  for(int tid = 0; tid < MAX_THREADS; tid++)
+  {
+    if (uthreads[tid].used)
+    {
+      current_tid = tid;
+      uthreads[tid].fun();
+      // これ以降は実行されない
+      uthreads[tid].used = 0;
+      current_tid = -1;
+    }
+  }
+}
 
+int mytid(void)
+{
+  return current_tid;
+}
