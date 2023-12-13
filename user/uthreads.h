@@ -20,6 +20,8 @@ struct context {
   uint64 s11;
 };
 
+typedef enum { UT_READY, UT_SLEEP } uthread_state_t;
+
 // define uthread_t
 typedef struct {
   void (*fun)();
@@ -27,7 +29,10 @@ typedef struct {
   int used;
   struct context context;
   uint64 stack[STACK_DEPTH];
+  uthread_state_t state;
+  void *waiting_on;
 } uthread_t;
+
 
 // functions
 void swtch(struct context*, struct context*);
@@ -36,4 +41,8 @@ void start_uthreads();
 void yield();
 int mytid();
 void uthread_exit();
+void uthread_wait(void *a);
+void uthread_notify(int tid, void *a);
+void uthread_notify_all(void *a);
+
 

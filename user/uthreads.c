@@ -13,7 +13,7 @@ void yield(void)
   for (int i = 0; i < MAX_THREADS; i++)
   {
     int next_tid = (tid + i + 1) % MAX_THREADS;
-    if (uthreads[next_tid].used)
+    if (uthreads[next_tid].used && uthreads[next_tid].state == UT_READY)
     {
       struct context *current_context = &(uthreads[tid].context);
       struct context *next_context = &(uthreads[next_tid].context);
@@ -69,4 +69,25 @@ void uthread_exit(void) {
   int tid = mytid();
   uthreads[tid].used = 0; // スレッドを未使用状態に設定
   yield(); // 次のスレッドに実行を移す
+}
+
+void uthread_wait(void *a) {
+  int tid = mytid();
+  uthreads[tid].state = UT_SLEEP;
+  uthreads[tid].waiting_on = a;
+  yield(); // 他のスレッドに実行を譲る
+}
+
+void uthread_notify(int tid, void *a) {
+  if (uthreads[tid].waiting_on == a) {
+    uthreads[tid].state = UT_READY;
+  }
+}
+
+void uthread_notify_all(void *a) {
+  for (int tid = 0; tid < MAX_THREADS; tid++) {
+    if (uthreads[tid].waiting_on == a) {
+      uthreads[tid].state = UT_READY;
+    }
+  }
 }
