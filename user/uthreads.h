@@ -1,6 +1,6 @@
 #define MAX_THREADS 16
+#define STACK_DEPTH 512
 
-// Saved registers for kernel context switches. (from kernel/proc.h)
 struct context {
   uint64 ra;
   uint64 sp;
@@ -20,10 +20,6 @@ struct context {
   uint64 s11;
 };
 
-// swtch.S (from kernel/defs.h)
-void swtch(struct context*, struct context*);
-#define STACK_DEPTH 512
-
 // define uthread_t
 typedef struct {
   void (*fun)();
@@ -33,6 +29,8 @@ typedef struct {
   uint64 stack[STACK_DEPTH];
 } uthread_t;
 
+// functions
+void swtch(struct context*, struct context*);
 int make_uthread(void (*fun)());
 void start_uthreads();
 void yield();
