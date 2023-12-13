@@ -40,22 +40,33 @@ int make_uthread(void (*fun)())
   return -1; // スレッドの作成ができない場合
 }
 
-void start_uthreads(void)
-{
-  for(int tid = 0; tid < MAX_THREADS; tid++)
-  {
-    if (uthreads[tid].used)
-    {
-      current_tid = tid;
-      uthreads[tid].fun();
-      // これ以降は実行されない
-      uthreads[tid].used = 0;
-      current_tid = -1;
+void start_uthreads(void) {
+  while (1) {
+    int active_threads = 0;
+    for(int tid = 0; tid < MAX_THREADS; tid++) {
+      if (uthreads[tid].used) {
+        active_threads = 1;
+        current_tid = tid;
+        uthreads[tid].fun();
+        // スレッドの関数が戻った場合は、通常はuthread_exitによるものと考えられる
+        uthreads[tid].used = 0;
+        current_tid = -1;
+      }
+    }
+    if (!active_threads) {
+      break; // 全てのスレッドが終了した
     }
   }
 }
 
+
 int mytid(void)
 {
   return current_tid;
+}
+
+void uthread_exit(void) {
+  int tid = mytid();
+  uthreads[tid].used = 0; // スレッドを未使用状態に設定
+  yield(); // 次のスレッドに実行を移す
 }
