@@ -25,13 +25,13 @@ void yield(void) {
       return;
     }
   }
-    // Return to main thread
-    int next_tid = main_tid;
-    struct context *current_context = &(uthreads[tid].context);
-    struct context *next_context = &(uthreads[next_tid].context);
-    current_tid = next_tid;
-    swtch(current_context, next_context);
-    return;
+  // Return to main thread
+  int next_tid = main_tid;
+  struct context *current_context = &(uthreads[tid].context);
+  struct context *next_context = &(uthreads[next_tid].context);
+  current_tid = next_tid;
+  swtch(current_context, next_context);
+  return;
 }
 
 int make_uthread(void (*fun)()) {
