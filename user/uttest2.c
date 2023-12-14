@@ -5,7 +5,7 @@
 
 void foo() {
     int c = 0;
-    while (c < 5) {
+    for(int i=0; i<5; i++) {
         printf("foo (tid=%d): %d\n", mytid(), c);
         c += 1;
         yield();
@@ -14,7 +14,7 @@ void foo() {
 }
 void bar() {
     int c = 0;
-    while (c < 5) {
+    for(int i=0; i<5; i++) {
         printf("bar (tid=%d): %d\n", mytid(), c);
         c += 2;
         yield();
@@ -28,7 +28,7 @@ void baz_sub(int *cp) {
 }
 void baz() {
     int c = 0;
-    while (c < 5) {
+    for(int i=0; i<5; i++) {
         baz_sub(&c);
         baz_sub(&c);
     }
