@@ -4,18 +4,16 @@
 
 uthread_t uthreads[MAX_THREADS];
 
-int debug = 1;
+int debug = 0;
 
 int current_tid = -1;
 int main_tid = -1;
 
 // 他のスレッドに実行を譲る
-void yield(void)
-{
+void yield(void) {
   int tid = mytid();
   // serach for next thread from tid + 1 to tid + MAX_THREADS
-  for (int i = 0; i < MAX_THREADS; i++)
-  {
+  for (int i = 0; i < MAX_THREADS; i++) {
     int next_tid = (tid + i + 1) % MAX_THREADS;
     if (uthreads[next_tid].used && uthreads[next_tid].state == UT_READY)
     {
@@ -27,7 +25,6 @@ void yield(void)
       return;
     }
   }
-    if (debug) printf("YIELD : Thread %d has no thread to yield to\n", tid);
     // Return to main thread
     int next_tid = main_tid;
     struct context *current_context = &(uthreads[tid].context);
@@ -37,8 +34,7 @@ void yield(void)
     return;
 }
 
-int make_uthread(void (*fun)())
-{
+int make_uthread(void (*fun)()) {
   for (int tid = 0; tid < MAX_THREADS; tid++)
   {
     if (!uthreads[tid].used)
@@ -76,8 +72,7 @@ void start_uthreads(void) {
 }
 
 
-int mytid(void)
-{
+int mytid(void) {
   return current_tid;
 }
 

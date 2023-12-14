@@ -17,7 +17,6 @@ void thread_waiter2() {
     uthread_wait(&condition_variable);
     printf("Thread Waiter 2: Received notification\n");
     uthread_exit();
-    printf("Thread Waiter 2: This should not be printed!!!!!!\n");
 }
 
 void thread_notifier() {
