@@ -2,14 +2,12 @@
 #include "user/user.h"
 #include "user/uthreads.h"
 
-uthread_t uthreads[MAX_THREADS];
-
 int debug = 0;
 
 int current_tid = -1;
 int main_tid = -1;
+uthread_t uthreads[MAX_THREADS];
 
-// 他のスレッドに実行を譲る
 void yield(void) {
   int tid = mytid();
   // serach for next thread from tid + 1 to tid + MAX_THREADS
@@ -39,10 +37,10 @@ int make_uthread(void (*fun)()) {
   {
     if (!uthreads[tid].used)
     {
-      uthreads[tid].fun = fun;
       uthreads[tid].used = 1;
       uthreads[tid].context.ra = (uint64)fun;
       uthreads[tid].context.sp = (uint64)(uthreads[tid].stack + STACK_DEPTH);
+      uthreads[tid].state = UT_READY;
       return tid;
     }
   }
@@ -53,19 +51,23 @@ void start_uthreads(void) {
   while (1) {
     int active_threads = 0;
     for(int tid = 0; tid < MAX_THREADS; tid++) {
-      if (uthreads[tid].used) {
+      if (uthreads[tid].used && uthreads[tid].state == UT_READY) {
         if (debug) printf("Thread %d is used\n", tid);
         active_threads = 1;
         current_tid = tid;
         main_tid = tid;
-        uthreads[tid].fun();
+        // call thread function
+        if (debug) printf("Thread %d is ready\n", tid);
+        void (*fun)() = (void (*)())(uthreads[tid].context.ra);
+        fun();
+        // (used must be already 0)
         uthreads[tid].used = 0;
         current_tid = -1;
         if (debug) printf("Thread %d returned\n", tid);
       }
     }
     if (!active_threads) {
-      break; // 全てのスレッドが終了した
+      break;
     }
   }
   return;
@@ -78,9 +80,9 @@ int mytid(void) {
 
 void uthread_exit(void) {
   int tid = mytid();
-  uthreads[tid].used = 0; // スレッドを未使用状態に設定
+  uthreads[tid].used = 0;
   if (debug) printf("Thread %d exited\n", tid);
-  yield(); // 次のスレッドに実行を移す
+  yield();
   if (debug) printf("Thread %d finish exitting\n", tid);
 }
 
