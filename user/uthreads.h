@@ -25,7 +25,6 @@ typedef enum { UT_READY, UT_SLEEP } uthread_state_t;
 // define uthread_t
 typedef struct {
   void (*fun)();
-  // identifer of process
   int used;
   struct context context;
   uint64 stack[STACK_DEPTH];

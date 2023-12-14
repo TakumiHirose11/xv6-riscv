@@ -3,7 +3,8 @@
 #include "user/uthreads.h"
 
 // 条件変数
-int condition_variable = 0;
+int condition_variable = 1;
+int zero = 0;
 
 void thread_waiter() {
     printf("Thread Waiter: Waiting for condition_variable to become 1\n");
@@ -13,12 +14,17 @@ void thread_waiter() {
 }
 
 void thread_notifier() {
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 3; i++) {
         printf("Thread Notifier: Sleeping for a bit...\n");
         yield();
     }
-    printf("Thread Notifier: Updating condition_variable to 1 and notifying...\n");
-    condition_variable = 1;
+    printf("Thread Notifier: Sending wrong notification\n");
+    uthread_notify_all(&zero);
+    for (int i = 0; i < 3; i++) {
+        printf("Thread Notifier: Sleeping for a bit...\n");
+        yield();
+    }
+    printf("Thread Notifier: Sending correct notification\n");
     uthread_notify_all(&condition_variable);
     uthread_exit();
 }
