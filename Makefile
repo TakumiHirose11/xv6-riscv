@@ -134,6 +134,7 @@ UPROGS=\
 	$U/_zombie\
 	$U/_getppidtest\
 	$U/_uttest1\
+	$U/_uttest1_2\
 	$U/_uttest2\
 	$U/_uttest3_1\
 	$U/_uttest3_2\
