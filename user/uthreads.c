@@ -2,6 +2,7 @@
 #include "user/user.h"
 #include "user/uthreads.h"
 
+// if debug is 1, print debug messages
 int debug = 0;
 
 int current_tid = -1;
